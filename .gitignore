@@ -7,6 +7,7 @@
 
 # Java class files
 *.class
+!ServerKeyNegotiation.class
 
 # generated files
 bin/

@@ -51,7 +51,7 @@ public class ServerKeyNegotiation{
 	{
 		try{
 			//get DH clientPublicKey string
-			String clientPubKeyStr = args[args.length-1];
+			String clientPubKeyStr = args[args.length-2];
 			//get DH clientPublicKey byte array
 			byte[] clientPubKeyByte = s2b(clientPubKeyStr);
 			//rebuild DH clientPublicKey
@@ -67,10 +67,13 @@ public class ServerKeyNegotiation{
 			serverKeyAgree.init(serverKpair.getPrivate());
 			//generate server's Negotiation Private Key
 			serverKeyAgree.doPhase(clientPubKey, true);
-			SecretKey serverDesKey = serverKeyAgree.generateSecret("DES");
+			String encrypyAlgorithm = args[args.length-1];
+			SecretKey serverConversationKey = serverKeyAgree.generateSecret(encrypyAlgorithm);
 			//output DH serverPublicKey string
 			byte[] serverPubKeyByte = serverKpair.getPublic().getEncoded();
 			System.out.println(b2s(serverPubKeyByte));
+			byte[] serverConversationKeyByte = serverConversationKey.getEncoded();
+			System.out.println(b2s(serverConversationKeyByte));
 		}
 		catch(Exception e)
 		{}

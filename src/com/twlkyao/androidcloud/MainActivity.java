@@ -9,6 +9,7 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -20,6 +21,7 @@ import com.twlkyao.utils.ConstantVariables;
 import com.twlkyao.utils.FileDEncryption;
 import com.twlkyao.utils.FileOperation;
 import com.twlkyao.utils.LogUtils;
+import com.twlkyao.utils.StringSplice;
 
 import android.os.Bundle;
 import android.os.Environment;
@@ -35,6 +37,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.DialogInterface.OnClickListener;
 import android.content.SharedPreferences;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -49,7 +52,7 @@ import android.widget.Toast;
 public class MainActivity extends Activity {
 	
 	private String TAG = "MainActivity";
-	private ObserverService observerService;
+//	private ObserverService observerService;
 	private boolean DEBUG = true;
 	private LogUtils logUtils = new LogUtils(DEBUG, TAG);
 	
@@ -132,7 +135,13 @@ public class MainActivity extends Activity {
 					
 					AlertDialog alertDialog = builder.create(); // Create the dialog.
 					alertDialog.show(); // Show the dialog.
-				} else if(constantVariables.decrypt_file == msg.arg1) {
+					
+					
+					/*// Call the third party net disks via api.
+					Intent intent = new Intent(MainActivity.this, ChooseDiskActivity.class);
+					startActivity(intent);*/
+					
+				} else if(constantVariables.decrypt_file == msg.arg1) { // Decrypt the files.
 					Toast.makeText(getApplicationContext(),
 							R.string.decrypt_succeed, Toast.LENGTH_SHORT).show();
 				}
@@ -171,6 +180,20 @@ public class MainActivity extends Activity {
 	}
 
 	/**
+	 * Make the Activity run in background rather than exit.
+	 */
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if (KeyEvent.KEYCODE_BACK == keyCode) {
+			Intent intent = new Intent(Intent.ACTION_MAIN);
+			intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			intent.addCategory(Intent.CATEGORY_HOME);
+			startActivity(intent);
+			return true;
+		}
+		return super.onKeyDown(keyCode, event);
+	}
+	
+	/**
 	 * Set the menu item selected operation.
 	 */
 	@Override
@@ -179,67 +202,98 @@ public class MainActivity extends Activity {
 		switch(item.getItemId()) { // Act according to the menu item clicked.
 		
 		// The switch-case need to be reorganized.
-			case R.id.action_settings: // The action_settings item.
-				Toast.makeText(getApplicationContext(),
-						R.string.action_settings, Toast.LENGTH_SHORT).show();
-				break;
 			case R.id.action_set_base_keys: // The action_set_base_keys item.
-				final Dialog set_base_key_dialog = new Dialog(MainActivity.this, R.style.FullHeightDialog);
-				set_base_key_dialog.setContentView(R.layout.set_base_key_dialog);
-				set_base_key_dialog.setCancelable(true);
+				
+				// Judge whether the base_key is already exist.
+				SharedPreferences sp = getSharedPreferences(constantVariables.PREF_NAME, MODE_PRIVATE); // Get the SharedPreferences.
+				String base_key = sp.getString(constantVariables.PREF_KEY, ""); // Get the string value.
+				
+//				logUtils.d(Tag, "本地密码：" + base_key);
+				
+				// Only show the set base key dialog when there is no base key.
+				if(base_key.equals("")) { 
+					final Dialog set_base_key_dialog = new Dialog(MainActivity.this, R.style.AppThemeDialog);
+					set_base_key_dialog.setContentView(R.layout.set_base_key_dialog);
+					set_base_key_dialog.setCancelable(true);
 
-				// Find the submit button.
-				Button btn_submit = (Button) set_base_key_dialog.findViewById(R.id.btn_submit);
-				
-				// Find the edit text.
-				final EditText editText = (EditText) set_base_key_dialog.findViewById(R.id.edittext_base_key);
-				
-				btn_submit.setOnClickListener(new View.OnClickListener() {
-					@Override
-					public void onClick(View v) {
-						// Store the base key in to SharedPreferences.
-						String base_key = editText.getText().toString();
+					// Find the submit button.
+					Button btn_submit = (Button) set_base_key_dialog.findViewById(R.id.btn_submit);
+					
+					// Find the edit text.
+					final EditText editText = (EditText) set_base_key_dialog.findViewById(R.id.edittext_base_key);
+					final EditText editTextConfirm = (EditText) set_base_key_dialog.findViewById(R.id.edittext_base_key_confirm);
+					
+					btn_submit.setOnClickListener(new View.OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							// Store the base key in to SharedPreferences.
+							String base_key = editText.getText().toString();
+							String base_key_confirm = editTextConfirm.getText().toString();
+							
+							if(!base_key.equals("") && !base_key_confirm.equals("") && base_key.equals(base_key_confirm)) {
+								// Get the SharedPreferences object, the SharedPreferences can only accessed by the calling application.
+								SharedPreferences sp = getSharedPreferences(constantVariables.PREF_NAME,
+										Context.MODE_PRIVATE);
+								
+								// Create a new Editor for SharedPreferences.
+								SharedPreferences.Editor editor = sp.edit(); 
+								
+								// Set data.
+								editor.putString(constantVariables.PREF_KEY, base_key);
+								
+								// Call the commit method to save changes.
+								editor.commit();
+								Toast.makeText(MainActivity.this,
+										R.string.base_key_success, Toast.LENGTH_SHORT).show();
+								set_base_key_dialog.dismiss();
+							} else {
+								editText.setText("");
+								editTextConfirm.setText("");
+								Toast.makeText(MainActivity.this,
+										R.string.base_key_conflict, Toast.LENGTH_SHORT).show();
+							}
+							
+							
+						}
+					});
+					
+					Button btn_cancel= (Button) set_base_key_dialog.findViewById(R.id.btn_cancel);
+					btn_cancel.setOnClickListener(new View.OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							set_base_key_dialog.dismiss();
+						}
+					});
+					//now that the dialog is set up, it's time to show it    
+					set_base_key_dialog.show(); 
+				} else { // Show the alert dialog when the base key is already exist.
+					Dialog alertDialog = new AlertDialog.Builder(MainActivity.this)
+					.setTitle(getString(R.string.base_key_alert_title))
+					.setIcon(android.R.drawable.ic_dialog_alert)
+					.setPositiveButton(R.string.btn_ok, new OnClickListener() {
 						
-						// Get the SharedPreferences object, the SharedPreferences can only accessed by the calling application.
-						SharedPreferences sp = getSharedPreferences(constantVariables.PREF_NAME,
-								Context.MODE_PRIVATE);
-						
-						// Create a new Editor for SharedPreferences.
-						SharedPreferences.Editor editor = sp.edit(); 
-						
-						// Set data.
-						editor.putString(constantVariables.PREF_KEY, base_key);
-						
-						// Call the commit method to save changes.
-						editor.commit();
-						Toast.makeText(MainActivity.this,
-								R.string.base_key_success, Toast.LENGTH_SHORT).show();
-						set_base_key_dialog.dismiss();
-					}
-				});
-				
-				Button btn_cancel= (Button) set_base_key_dialog.findViewById(R.id.btn_cancel);
-				btn_cancel.setOnClickListener(new View.OnClickListener() {
-					@Override
-					public void onClick(View v) {
-						set_base_key_dialog.dismiss();
-					}
-				});
-				//now that the dialog is set up, it's time to show it    
-				set_base_key_dialog.show(); 
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							// TODO Auto-generated method stub
+							dialog.dismiss();
+						}
+					})
+					.create();
+					alertDialog.show(); 
+				}
 				
 				break;
 			case R.id.action_show_contacts: // The show contacts item.
 				Intent intent_contacts = new Intent(getApplicationContext(), ContactsActivity.class);
 				startActivity(intent_contacts);				
 				break;
-			case R.id.action_show_messages:
+			case R.id.action_show_messages: // The show message item.
 				Intent intent_messages = new Intent(getApplicationContext(), MessageActivity.class);
 				startActivity(intent_messages);
 				break;
 			case R.id.action_help: // The help item.
 				Toast.makeText(getApplicationContext(),
-						R.string.help, Toast.LENGTH_SHORT).show();
+						R.string.help, Toast.LENGTH_LONG).show();
 				break;
 		}
 		return super.onOptionsItemSelected(item);
@@ -254,6 +308,7 @@ public class MainActivity extends Activity {
 		search_result_label= (TextView) this.findViewById(R.id.search_result_label); // The search result label
 		fileListView = (ListView) this.findViewById(R.id.file_listview); // The listview to store file information
 	}
+	
 	
 	/**
 	 * Set the search button listener
@@ -323,7 +378,7 @@ public class MainActivity extends Activity {
 							
 							// Create the directory to store the encrypted file.
 							final File dir1 = new File(Environment.getExternalStorageDirectory().toString()
-									+ File.separator + "ABB"); // Create a new directory to store the encrypted file.
+									+ File.separator + getString(R.string.encrypt_directory)); // Create a new directory to store the encrypted file.
 							if(!dir1.exists()) { // If the directory is not exist, create it.
 								dir1.mkdirs();
 							}
@@ -336,32 +391,54 @@ public class MainActivity extends Activity {
 								public void run() {
 									// TODO Auto-generated method stub
 									
-									msg.arg1 = constantVariables.encrypt_file; // Indicate this is the upload file type.
+									msg.arg1 = constantVariables.encrypt_file; // Indicate this is the encrypt file type.
 									
-									String remote_encrypt_key = fileOperation.retrieveEncryptKey(
-											ConstantVariables.BASE_URL + ConstantVariables.RETRIEVE_ENCRYPT_KEY,
-											which);
-									
-									// Get the base key from SharedPreferences.
-									String base_key = getBaseKey(constantVariables.PREF_NAME,
-											constantVariables.PREF_KEY);
-									
-									/**
-									 * Currently the base_key is not used.
-									 */
-									if(!remote_encrypt_key.equals("")) { // The retrieved encrypt key is not null.
+									if(0 == which) { // There is no need to encrypt the files.
 										
+										/*
+										// Move the src file to dest file path
+										InputStream is = new FileInputStream(file.getPath());
 										
-										// First encrypt the file and then upload the info of encrypted file and the file.
-										if(startEncrypt(file.getPath(), which, remote_encrypt_key,
+										File destFile = new File(dir1 + File.separator + file.getName()); // Create a new File instance.
+										if(!destFile.exists()) { // Only create a new file, if the file does not exists.
+											try {
+												destFile.createNewFile(); // Create a new, empty file.
+											} catch (IOException e) {
+												// TODO Auto-generated catch block
+												e.printStackTrace();
+											}
+										}*/
+										
+										msg.what = constantVariables.operation_succeed;
+										
+									} else { // Choose algorithms and keys to encrypt the files.
+										// Get the remote generated encrypt key.
+										String remote_encrypt_key = fileOperation.retrieveEncryptKey(
+												ConstantVariables.BASE_URL + ConstantVariables.RETRIEVE_ENCRYPT_KEY,
+												which);
+									
+										logUtils.d(Tag, "Encrypt Key:" + remote_encrypt_key);
+									
+										// Get the base key from SharedPreferences.
+										SharedPreferences sp = getSharedPreferences(constantVariables.PREF_NAME, MODE_PRIVATE); // Get the SharedPreferences.
+										String base_key = sp.getString(constantVariables.PREF_KEY, ""); // Get the string value.
+									
+										/**
+										 * Currently the base_key is not used.
+										 */
+										if(!remote_encrypt_key.equals("")) { // The retrieved encrypt key is not null.
+										
+											// First encrypt the file and then upload the info of encrypted file and the file.
+											if(startEncrypt(file.getPath(), which, remote_encrypt_key, base_key,
 												dir1 + File.separator + file.getName(), upload_file_info_url)) { // Encrypt the file successfully.
 											
-											msg.what = constantVariables.operation_succeed;
-										} else { // The encryption is failed.
+												msg.what = constantVariables.operation_succeed;
+											} else { // The encryption is failed.
+												msg.what = constantVariables.operation_failed;
+											}
+										} else { // The remote key is not passed correctly.
 											msg.what = constantVariables.operation_failed;
 										}
-									} else { // The retrieved encrypt key or the SharedPreferences key is empty.
-										msg.what = constantVariables.operation_failed;
 									}
 									
 									handler.sendMessage(msg);
@@ -391,7 +468,7 @@ public class MainActivity extends Activity {
 				final File file = (File) fileListAdapter.getItem(position);
 				
 				final File dir2 = new File(Environment.getExternalStorageDirectory().toString()
-						+ File.separator + "ACC"); // Create a new directory to store the encrypted file.
+						+ File.separator + getString(R.string.decrypt_directory)); // Create a new directory to store the encrypted file.
 				if(!dir2.exists()) { // If the directory is not exist, create it.
 					dir2.mkdirs();
 				}
@@ -445,53 +522,56 @@ public class MainActivity extends Activity {
 		base_key = sp.getString(sharedPreferencesKey, "");
 		return base_key;
 	}
+	
+	
 
 	/**
 	 * Create the file and upload the file information to remote server,
 	 * upload the file to remote server.
 	 * @param srcFilePath The file path of the file to be encrypted.
 	 * @param encrypt_level The encrypt level.
-	 * @param encrypt_key The encrypt key.
+	 * @param remote_key The remote encrypt key.
+	 * @param base_key The base encrypt key.
 	 * @param destFilePath The file path of the encrypted file to store.
 	 * @param uploadFileInfoUrl The url of the file information to upload to.
 	 * @param uploadFileUrl The url of the file to upload to.
 	 * @return True, if encryption is succeeded.
 	 */
 	public boolean startEncrypt(String srcFilePath,
-			int encrypt_level, String encrypt_key,
-			String destFilePath, String uploadFileInfoUrl) {
+			int encrypt_level, String remote_key,
+			String base_key, String destFilePath, String uploadFileInfoUrl) {
 		
 		boolean flag = false; // Initial the flag to be false.
 		File sd = Environment.getExternalStorageDirectory(); // Get the primary external storage directory.
 		boolean can_write = sd.canWrite(); // Indicates whether the current context is allowed to write to this file on SDCard.
 		if(!can_write) { // The SDCard is not allowed to write.
 			logUtils.d("startEncrypt", "SDCard can't read" + Environment.getExternalStorageState());
-//			Toast.makeText(MainActivity.this, R.string.can_not_read_sdcard, Toast.LENGTH_SHORT).show();
 		}
 		
 		FileDEncryption fileDEncryption = new FileDEncryption();
 		
-		if(fileDEncryption.Encryption(srcFilePath, constantVariables.algorithms[encrypt_level],
-				constantVariables.keys[encrypt_level], destFilePath)) { // File encryption is succeeded.
+		String encrypt_key = StringSplice.stringSplice(remote_key,
+				base_key); // Splice the remote_encrypt_key and base_key.
+		
+		if(fileDEncryption.Encryption(srcFilePath, constantVariables.algorithms[encrypt_level - 1], // Minus 1 for the reason that the level 0 is not encrypted.
+				encrypt_key, destFilePath)) { // File encryption is succeeded.
 			
 			String md5 = fileOperation.fileToMD5(destFilePath);	// Get the md5 value of the file
 			String sha1 = fileOperation.fileToSHA1(destFilePath);	// Get the sha1 value of the file
 			
+			logUtils.d(Tag, "Algorithm:" + constantVariables.algorithms[encrypt_level - 1]); // Log out the algorithms.
 			logUtils.d("md5 and sha1", "md5:" + md5 + "\nsha1:" + sha1);			// Log out the md5 and sha1 value of the file
 			
 			// Call the startUploadFileInfo function to upload file information.
 			if(fileOperation.uploadFileInfo(uploadFileInfoUrl,
 					String.valueOf(user_id), md5, sha1,
-					String.valueOf(encrypt_level), encrypt_key)) {
+					String.valueOf(encrypt_level), remote_key)) {
 				
 				flag = true;
 				
 				/**
 				 * This shoud call a third party application to do this stuff.
 				 */
-//				if(uploadFile(uploadFileUrl, destFilePath)) {
-//					flag = true;
-//				}
 				
 				// Call the upload app to do the stuff.
 			}
@@ -531,38 +611,23 @@ public class MainActivity extends Activity {
 		if(resultHashMap != null) { // The md5 and sha1 values are the same with the server.
 			int encrypt_level = Integer.parseInt(resultHashMap.get("encrypt_level"));
 			String encrypt_key = resultHashMap.get("encrypt_key");
+			
+			logUtils.d(Tag, "Decrypt Key:" + encrypt_key);
+			
+			// Get the base key from SharedPreferences.
+			SharedPreferences sp = getSharedPreferences(constantVariables.PREF_NAME, MODE_PRIVATE); // Get the SharedPreferences.
+			String base_key = sp.getString(constantVariables.PREF_KEY, ""); // Get the string value.
+			
+			String decrypt_key = StringSplice.stringSplice(encrypt_key, base_key);
+			
 			if(fileDEncryption.Decryption(srcFilePath,
-				constantVariables.algorithms[encrypt_level], encrypt_key, destFilePath)) { // The decryption is succeeded.
+				constantVariables.algorithms[encrypt_level - 1], decrypt_key, destFilePath)) { // The decryption is succeeded.
 				flag = true; // Set the flag to false.
 			}
 		}
 		
 		return flag;
 	}
-	
-	/**
-	 * Upload file use upload file application that specified by packageName. 
-	 * @param packageName The package name of the upload file application.
-	 */
-	public void startUpload(String packageName, String className) {
-		
-		Intent intent = new Intent();
-        ComponentName componentname = new ComponentName( packageName, className);
-        intent.setComponent(componentname);
-        startActivity(intent);
-	}
-	
-	/**
-	 * Retrieve the password from a website specified by passwordUrl.
-	 * @param passwordUrl The url of the password generator to retrieve password from.
-	 * @param encrypt_level The encrypt level.
-	 * @return The retrieved password.
-	 */
-	/*public String retrivePassword(String passwordUrl, int encrypt_level) {
-		String passwordString = "";
-		
-		return passwordString;
-	}*/
 	
 	/**
 	 * Create a thread to upload the file.
@@ -688,7 +753,7 @@ public class MainActivity extends Activity {
 	 */
 	private void initData(File folder) {
 		boolean isSDcard = folder.equals(Environment.getExternalStorageDirectory()); // Judge is the folder is the SDcard
-		ArrayList<File> files = new ArrayList<File>();   
+		ArrayList<File> files = new ArrayList<File>();
 		if (!isSDcard) { // If the current folder is not the SDcard
 			files.add(Environment.getExternalStorageDirectory()); // Back to the SDcard
 			files.add(folder.getParentFile()); // Back to parent

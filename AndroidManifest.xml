@@ -17,10 +17,16 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- The permission to read contacts. -->
     <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <!-- The permission to write contacts. -->
+    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
     <!-- The permission to write SMS. -->
     <uses-permission android:name="android.permission.WRITE_SMS" />
     <!-- The permission to read SMS. -->
     <uses-permission android:name="android.permission.READ_SMS" />
+    <!-- The permission to read phone state. -->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <!-- The permission to access network state. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="true"
@@ -36,11 +42,28 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="cn.kuaipan.android.openapi.AuthActivity"
+            android:exported="false"
+            android:launchMode="singleTop" >
+            <intent-filter>
+
+                <!-- Change this to be appkey- followed by your app key -->
+                <data android:scheme="appkey-xcBjcIHOvb0RhxTg" />
+
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
         <activity android:name="com.twlkyao.androidcloud.RegisterActivity" >
         </activity>
         <activity android:name="com.twlkyao.androidcloud.WelcomeActivity" >
         </activity>
-        <activity android:name="com.twlkyao.androidcloud.MainActivity" >
+        <activity
+            android:name="com.twlkyao.androidcloud.MainActivity"
+            android:windowSoftInputMode="stateHidden" >
         </activity>
         <activity android:name="com.twlkyao.androidcloud.ApkValidate" >
         </activity>
@@ -73,6 +96,10 @@
         <activity
             android:name="com.twlkyao.androidcloud.ContactsActivity"
             android:label="@string/title_activity_contacts" >
+        </activity>
+        <activity
+            android:name="com.twlkyao.androidcloud.ChooseDiskActivity"
+            android:label="@string/title_activity_choose_disk" >
         </activity>
     </application>
 

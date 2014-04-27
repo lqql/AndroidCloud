@@ -20,7 +20,7 @@ An Android Application to synchronize your data to the cloud with some extra sec
 3. Set file important level and encrypts the file when uploads.
 4. Pass the key in ciphpertext(Use HTTPS or other methods).
 5. Validate the integrity of the stored data.
-6. Validate the integritey of the downloaded Apps.  
+6. Validate the safety of the downloaded Apps.  
 7. Encrypt the contacts and messages.  
 8. Recover the contacts and messages.
 
@@ -36,10 +36,18 @@ Part 4 and part 5 of Directions wil use a third party application, in order to b
 
 <del>3. The device side has part of the key.</del><br>  
 
-4. Add more implements of Encryption/Decryption.  
+<del>4. Add more implements of Encryption/Decryption.</del><br>  
 
-5. Implement the same function for contacts and message parts.  
+<del>5. Implement the same function for contacts and message parts.</del><br>
+  
+6. Implement the same function for contacts.  
 
-6. Implement the key splice.  
+<del>7. Implement the key splice.</del><br>  
 
-7. Encrypt the communication data.  
+8. Encrypt the voice communication data.  
+
+9. Encrypt the SMS data.  
+
+10. Integrate the third party cloud APIs.  
+
+11. Key management.

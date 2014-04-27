@@ -5,12 +5,14 @@ public class ConstantVariables {
 	/**
 	 * AVD base address
 	 */
-//	final public static String BASE_URL= "http://10.0.2.2/"; //Set the login url; 
+//	final public static String BASE_URL= "http://10.0.2.2/"; //Set the base url; 
 
 	/**
 	 * Real world base address
 	 */
-	final public static String BASE_URL= "http://219.245.80.17/"; //Set the login url
+//	final public static String BASE_URL = "http://219.245.80.192/"; //Set the base url
+	final public static String BASE_URL = "http://219.245.80.2:20080/"; // Set the base url.
+//	final public static String BASE_URL = "http://192.168.0.1:20080/"; // Set the base url.
 	
 	// The string of website.
 	final public static String REGISTER_URL = "cloud/android/register.php"; // The location of the register PHP script
@@ -21,6 +23,9 @@ public class ConstantVariables {
 	final public static String RETRIEVE_ENCRYPT_KEY = "cloud/android/keys_generator.php"; // The location of the keys generator PHP script.
 	final public static String CHECK_APK_INFO = "cloud/check_apk_info"; // The location of the check apk info PHP script.
 	final public static String NEGOTIATION_URL = "cloud/android/key_negotiation.php";
+	
+	public static String smsBackupLocation = "/SMSBackup/";
+	public static String smsFile = "sms.xml";
 	
 	// The type of message.
 	final String SMS_URI_ALL = "content://sms/"; // All sms.
@@ -58,24 +63,28 @@ public class ConstantVariables {
 	 */
 	
 	public String[] algorithms = {
-			"DESede", "AES"
+			"AES", "AES", "AES", "DESede"
 	};
 	
-	public String[] keys = {
+	/*public String[] keys = {
 		"12345678abcd",
 		"12345678"
-
-	};
+	};*/
+	
 	
 	public String[] packageNames = {
 		"com.owncloud.android",
-		"com.qq.qcloud"
-//		"com.baidu.netdisk",
+		"com.qq.qcloud",
+		"com.baidu.netdisk",
+		"com.ylmf.androidclient",
+		"com.qihoo.yunpan"
 	};
 	
 	public String[] classNames= {
 		"com.owncloud.android.ui.activity.FileDisplayActivity",
-		"com.qq.qcloud.LaunchActivity"
-//		"com.baidu.netdisk.ui.Navigate",
+		"com.qq.qcloud.LaunchActivity",
+		"com.baidu.netdisk.ui.Navigate",
+		"com.ylmf.androidclient.UI.LogActivity",
+		"com.qihoo.yunpan.SplashyActivity"
 	};
   }

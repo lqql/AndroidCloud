@@ -1,6 +1,9 @@
 package com.twlkyao.utils;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
+import android.os.Build;
+import android.os.StrictMode;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.KeyFactory;
@@ -119,9 +122,16 @@ public class KeyNegotiation {
 		return null;
 	}
     
-	@SuppressLint("TrulyRandom")
+	@TargetApi(Build.VERSION_CODES.GINGERBREAD)
+	@SuppressLint({ "TrulyRandom", "NewApi" })
 	public static HashMap<String, String> negotiation(String encryptAlgorithm)
 	{
+		StrictMode.ThreadPolicy formerPolicy = null;
+		if (andoird.os.Build.VERSION.SDK_INI > 9){
+			formerPolicy = StrictMode.getThreadPolicy();
+			StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+			StrictMode.setThreadPolicy(policy);
+		}
 		try
 		{
 			//generate DH key pair
@@ -151,6 +161,9 @@ public class KeyNegotiation {
 			HashMap<String, String> session =new HashMap<String, String>();
 			session.put("sessionid", sessionid);
 			session.put("conversationKey", b2s(clientConversationKey.getEncoded()));
+			if (android.os.Build.VERSION.SDK_INI > 9){
+				StrictMode.setThreadPolicy(formerPolicy);
+			}
 			return session;
 		}
 		catch(Exception e)

@@ -76,6 +76,8 @@ public class ServerKeyNegotiation{
 			System.out.println(b2s(serverConversationKeyByte));
 		}
 		catch(Exception e)
-		{}
+		{
+			System.out.println("Error!");
+		}
 	}
 }

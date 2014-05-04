@@ -4,11 +4,21 @@ session_start();
 $clientDHPublicKey = $_POST['clientDHPublicKey'];
 $encryptAlgorithm = $_POST['encryptAlgorithm'];
 exec("java ServerKeyNegotiation"." ".$clientDHPublicKey." ".$encryptAlgorithm,$out,$ret);
-$_SESSION['sessionkey'] = $out[1];
-$sessionid = session_id();
-$result_array  = array(
-	'serverPubKey'=>$out[0],
-	'sessionid'=>$sessionid
-);
+if((strcmp($out[sizeof($out)-1],"Error!")==0))
+{
+	$result_array  = array(
+		'flag'=>'fail'
+	);
+}
+else
+{
+	$_SESSION['sessionkey'] = $out[1];
+	$sessionid = session_id();
+	$result_array  = array(
+		'flag'=>'success',
+		'serverPubKey'=>$out[0],
+		'sessionid'=>$sessionid
+	);
+}
 echo json_encode($result_array); // encode $arr into json type
 ?>

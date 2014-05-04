@@ -124,17 +124,17 @@ public class KeyNegotiation {
     
 	@TargetApi(Build.VERSION_CODES.GINGERBREAD)
 	@SuppressLint({ "TrulyRandom", "NewApi" })
-	public static HashMap<String, String> negotiation(String encryptAlgorithm)
+	public static boolean negotiation(String encryptAlgorithm)
 	{
-		HashMap<String, String> session = null;
+		String flag = "fail";
+		StrictMode.ThreadPolicy formerPolicy = null;
+		if (andoird.os.Build.VERSION.SDK_INI > 9){
+			formerPolicy = StrictMode.getThreadPolicy();
+			StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+			StrictMode.setThreadPolicy(policy);
+		}
 		try
 		{
-			StrictMode.ThreadPolicy formerPolicy = null;
-			if (andoird.os.Build.VERSION.SDK_INI > 9){
-				formerPolicy = StrictMode.getThreadPolicy();
-				StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-				StrictMode.setThreadPolicy(policy);
-			}
 			//generate DH key pair
 			KeyPairGenerator clientKpairGen = KeyPairGenerator.getInstance("DH");
 			clientKpairGen.initialize(512);
@@ -145,31 +145,34 @@ public class KeyNegotiation {
 			String clientPubKeyStr = b2s(clientPubKeyByte);		
 			//get DH serverPublicKey string
 			JSONObject serverPubKeyStr_sessionIDStr = GenSessionKeyOnServer_ReturnServerDHPublicKeyAndSessionID(clientPubKeyStr,negotiationUrl,encryptAlgorithm);
-			//get DH serverPublicKey byte array
-			sessionid = serverPubKeyStr_sessionIDStr.getString("sessionid");
-			String serverPubKeyStr = serverPubKeyStr_sessionIDStr.getString("serverPubKey");
-			byte[] serverPubKeyByte = s2b(serverPubKeyStr);
-			//rebuild DH serverPublicKey
-			KeyFactory clientKeyFac = KeyFactory.getInstance("DH");
-			PublicKey serverPubKey = clientKeyFac.generatePublic(new X509EncodedKeySpec(serverPubKeyByte));
-			//initialize DH clientPrivateKey
-			KeyAgreement clientKeyAgree = KeyAgreement.getInstance("DH");
-			clientKeyAgree.init(clientKpair.getPrivate());
-			//generate client's Negotiation Private Key
-			clientKeyAgree.doPhase(serverPubKey, true);
-			//generate client's Session Key
-			SecretKey clientConversationKey = clientKeyAgree.generateSecret(encryptAlgorithm);
-			session =new HashMap<String, String>();
-			session.put("sessionid", sessionid);
-			session.put("conversationKey", b2s(clientConversationKey.getEncoded()));
-			if (android.os.Build.VERSION.SDK_INI > 9){
-				StrictMode.setThreadPolicy(formerPolicy);
+			flag = serverPubKeyStr_sessionIDStr.getString("flag");
+			if(flag.equals("success"))
+			{
+				//get DH serverPublicKey byte array
+				sessionid = serverPubKeyStr_sessionIDStr.getString("sessionid");
+				String serverPubKeyStr = serverPubKeyStr_sessionIDStr.getString("serverPubKey");
+				byte[] serverPubKeyByte = s2b(serverPubKeyStr);
+				//rebuild DH serverPublicKey
+				KeyFactory clientKeyFac = KeyFactory.getInstance("DH");
+				PublicKey serverPubKey = clientKeyFac.generatePublic(new X509EncodedKeySpec(serverPubKeyByte));
+				//initialize DH clientPrivateKey
+				KeyAgreement clientKeyAgree = KeyAgreement.getInstance("DH");
+				clientKeyAgree.init(clientKpair.getPrivate());
+				//generate client's Negotiation Private Key
+				clientKeyAgree.doPhase(serverPubKey, true);
+				//generate client's Session Key
+				SecretKey clientConversationKey = clientKeyAgree.generateSecret(encryptAlgorithm);
+				ConversationKey.sessionID = sessionid;
+				ConversationKey.conversationKey = b2s(clientConversationKey.getEncoded());
 			}
 		}
 		catch(Exception e)
 		{
 			e.printStackTrace();
 		}
-		return session;
+		if (android.os.Build.VERSION.SDK_INI > 9){
+			StrictMode.setThreadPolicy(formerPolicy);
+		}
+		return flag.equals("success")?true:false;
 	}
 }

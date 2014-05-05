@@ -12,7 +12,7 @@ if((strcmp($out[sizeof($out)-1],"Error!")==0))
 }
 else
 {
-	$_SESSION['sessionkey'] = $out[1];
+	$_SESSION['conversationkey'] = $out[1];
 	$sessionid = session_id();
 	$result_array  = array(
 		'flag'=>'success',

@@ -22,6 +22,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.twlkyao.utils.ConstantVariables;
+import com.twlkyao.utils.ConversationKey;
+import com.twlkyao.utils.DEncryptionForConversation;
 import com.twlkyao.utils.LogUtils;
 
 import android.app.Activity;
@@ -267,7 +269,7 @@ public class RegisterActivity extends Activity {
 		
 		// pass the parameters stored in name-value pair
 		List<BasicNameValuePair> params=new ArrayList<BasicNameValuePair>();
-		params.add(new BasicNameValuePair("sessionid_conversationkey",ConversationKey.sessiionID)); // add the sessionid_conversationkey name-value
+		params.add(new BasicNameValuePair("sessionid_conversationkey",ConversationKey.sessionID)); // add the sessionid_conversationkey name-value
 
 		try{
 			userName = DEncryptionForConversation.conversationencrypt(userName, ConversationKey.conversationKey);

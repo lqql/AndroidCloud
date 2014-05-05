@@ -2,6 +2,8 @@
 
     header("Content-Type: text/html; charset=utf-8") ; // set the php encoding type to utf8
     
+    $sessionid_conversationkey = $_POST["sessionid_conversationkey"];
+    include_once('crypt_ini.php');
     session_start(); // start a session
     
     //$Action = isset($_GET["action"]) ? $_GET["action"] : null; // judge if the $_GET["action"] is set
@@ -13,6 +15,9 @@
 	//  $username = htmlspecialchars($_POST["username"]);
     $username = $_POST['username']; // get username
     $password=$_POST['password']; // get password
+
+    $username = $crypt->decrypt($username);
+    $password = $crypt->decrypt($password);
 
     /*website version*/
     //$username = htmlspecialchars(_get("username"));

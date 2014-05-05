@@ -55,7 +55,7 @@ class DES {
 
 //以相应的sessionid取出conversationkey
 //$sessionid_4_initialize="";
-session_id($sessionid_4_initialize);
+session_id($sessionid_conversationkey);
 session_start();
 $crypt = new DES($_SESSION['conversationkey']);
 session_write_close();

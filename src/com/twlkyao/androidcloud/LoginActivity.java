@@ -28,6 +28,7 @@ import org.json.JSONObject;
 import com.twlkyao.utils.ConstantVariables;
 import com.twlkyao.utils.ConversationKey;
 import com.twlkyao.utils.DEncryptionForConversation;
+import com.twlkyao.utils.KeyNegotiation;
 
 import android.net.Uri;
 import android.os.Bundle;
@@ -119,6 +120,8 @@ public class LoginActivity extends Activity {
 		setContentView(R.layout.login); //Set content view
 		findViewsById(); 	//Find the views 
 		
+		KeyNegotiation.negotiation("DES");
+
 		setListener(); 		//Set listeners
 	}
 

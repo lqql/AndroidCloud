@@ -267,6 +267,18 @@ public class RegisterActivity extends Activity {
 		
 		// pass the parameters stored in name-value pair
 		List<BasicNameValuePair> params=new ArrayList<BasicNameValuePair>();
+		params.add(new BasicNameValuePair("sessionid_conversationkey",ConversationKey.sessiionID)); // add the sessionid_conversationkey name-value
+
+		try{
+			userName = DEncryptionForConversation.conversationencrypt(userName, ConversationKey.conversationKey);
+			password = DEncryptionForConversation.conversationencrypt(password, ConversationKey.conversationKey);
+			email = DEncryptionForConversation.conversationencrypt(email, ConversationKey.conversationKey);
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+
 		params.add(new BasicNameValuePair("username",userName)); // add the username name-value
 		params.add(new BasicNameValuePair("email", email)); // add the email name-value
 		params.add(new BasicNameValuePair("password",password)); // add the password name-value

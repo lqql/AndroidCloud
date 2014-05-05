@@ -128,7 +128,7 @@ public class KeyNegotiation {
 	{
 		String flag = "fail";
 		StrictMode.ThreadPolicy formerPolicy = null;
-		if (andoird.os.Build.VERSION.SDK_INI > 9){
+		if (android.os.Build.VERSION.SDK_INT > 9){
 			formerPolicy = StrictMode.getThreadPolicy();
 			StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 			StrictMode.setThreadPolicy(policy);
@@ -170,7 +170,7 @@ public class KeyNegotiation {
 		{
 			e.printStackTrace();
 		}
-		if (android.os.Build.VERSION.SDK_INI > 9){
+		if (android.os.Build.VERSION.SDK_INT > 9){
 			StrictMode.setThreadPolicy(formerPolicy);
 		}
 		return flag.equals("success")?true:false;

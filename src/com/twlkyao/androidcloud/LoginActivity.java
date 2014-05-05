@@ -258,6 +258,16 @@ public class LoginActivity extends Activity {
 		
 		// use name-value pair to store the parameters to pass
 		List<BasicNameValuePair> params=new ArrayList<BasicNameValuePair>();
+		params.add(new BasicNameValuePair("sessionid_conversationkey",ConversationKey.sessiionID)); // add the sessionid_conversationkey name-value
+
+		try{
+			strUsername = DEncryptionForConversation.conversationencrypt(strUsername, ConversationKey.conversationKey);
+			strPassword = DEncryptionForConversation.conversationencrypt(strPassword, ConversationKey.conversationKey);
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
 		params.add(new BasicNameValuePair("username", strUsername)); // add the username name-value
 		params.add(new BasicNameValuePair("password", strPassword)); // add the password name-value
 		

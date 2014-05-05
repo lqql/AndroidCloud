@@ -1,6 +1,8 @@
 <?php
     header("Content-Type: text/html; charset=utf-8") ;
 
+    $sessionid_conversationkey = $_POST["sessionid_conversationkey"];
+    include_once('crypt_ini.php');
     session_start(); // start the seesion
     
     /*mobile version */
@@ -8,6 +10,10 @@
     $username = $_POST["username"];
     $password=$_POST["password"];
     $email=$_POST["email"];
+
+    $username = $crypt->decrypt($username);
+    $password = $crypt->decrypt($password);
+    $email = $crypt->decrypt($email);
     
     $password = md5($password); // md5 the $password
 
